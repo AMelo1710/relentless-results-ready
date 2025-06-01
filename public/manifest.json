@@ -1,0 +1,21 @@
+
+{
+  "short_name": "ShapeInsano",
+  "name": "Shape Insano 28 Dias",
+  "icons": [
+    {
+      "src": "/lovable-uploads/84acf049-3854-4906-b2db-530e1d921fce.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/lovable-uploads/84acf049-3854-4906-b2db-530e1d921fce.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#dc2626",
+  "background_color": "#0f0f0f"
+}

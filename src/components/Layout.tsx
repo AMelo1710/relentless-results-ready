@@ -12,8 +12,10 @@ export const Layout = ({ children }: LayoutProps) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-fitness-black">
         <AppSidebar />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {children}
+        <main className="flex-1 p-3 md:p-4 lg:p-6 xl:p-8 pt-16 md:pt-4">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </SidebarProvider>

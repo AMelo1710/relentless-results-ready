@@ -9,6 +9,7 @@ import { saveToStorage, getFromStorage, StorageKeys } from '@/utils/storage';
 interface PhotoEntry {
   id: string;
   date: string;
+  time: string;
   dataUrl: string;
   day: number;
 }
@@ -21,7 +22,11 @@ const Fotos = () => {
 
   useEffect(() => {
     const savedPhotos = getFromStorage(StorageKeys.FOTOS, []);
-    setPhotos(savedPhotos);
+    // Ordenar do mais recente para o mais antigo
+    const sortedPhotos = savedPhotos.sort((a: PhotoEntry, b: PhotoEntry) => 
+      new Date(b.date + ' ' + (b.time || '00:00')).getTime() - new Date(a.date + ' ' + (a.time || '00:00')).getTime()
+    );
+    setPhotos(sortedPhotos);
   }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +36,12 @@ const Fotos = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const currentTime = now.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
       
       // Calculate day number (assuming day 1 is when first photo was taken)
       const dayNumber = photos.length + 1;
@@ -39,11 +49,12 @@ const Fotos = () => {
       const newPhoto: PhotoEntry = {
         id: Date.now().toString(),
         date: today,
+        time: currentTime,
         dataUrl,
         day: dayNumber > 28 ? 28 : dayNumber
       };
 
-      const updatedPhotos = [...photos, newPhoto];
+      const updatedPhotos = [newPhoto, ...photos]; // Adicionar no início da lista
       setPhotos(updatedPhotos);
       saveToStorage(StorageKeys.FOTOS, updatedPhotos);
     };
@@ -83,27 +94,27 @@ const Fotos = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3">
-          <Camera className="text-fitness-red" />
+        <h1 className="text-2xl md:text-4xl font-bold text-white flex items-center justify-center gap-3">
+          <Camera className="text-cyan-500" />
           Fotos de Progresso
         </h1>
-        <p className="text-fitness-gray-light text-lg">
+        <p className="text-fitness-gray-light text-base md:text-lg">
           Documente sua transformação dia a dia
         </p>
         
-        <div className="bg-fitness-gray-dark p-6 rounded-xl">
-          <div className="text-3xl font-bold text-fitness-red mb-2">
+        <div className="bg-fitness-gray-dark p-4 md:p-6 rounded-xl">
+          <div className="text-2xl md:text-3xl font-bold text-cyan-500 mb-2">
             {photos.length}/28
           </div>
           <p className="text-fitness-gray-light">Fotos Registradas</p>
         </div>
       </div>
 
-      <Card className="glass-effect border-fitness-red">
+      <Card className="glass-effect border-cyan-500/50">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-white flex items-center gap-2 text-lg md:text-xl">
             <Upload className="h-5 w-5" />
             Adicionar Nova Foto
           </CardTitle>
@@ -121,10 +132,10 @@ const Fotos = () => {
               htmlFor="photo-upload"
               className="cursor-pointer inline-block"
             >
-              <div className="border-2 border-dashed border-fitness-red rounded-lg p-8 hover:bg-fitness-red/10 transition-all duration-300">
-                <Camera className="h-12 w-12 text-fitness-red mx-auto mb-4" />
-                <p className="text-white font-semibold mb-2">Clique para adicionar foto</p>
-                <p className="text-fitness-gray-light text-sm">
+              <div className="border-2 border-dashed border-cyan-500 rounded-lg p-6 md:p-8 hover:bg-cyan-500/10 transition-all duration-300">
+                <Camera className="h-8 md:h-12 w-8 md:w-12 text-cyan-500 mx-auto mb-4" />
+                <p className="text-white font-semibold mb-2 text-sm md:text-base">Clique para adicionar foto</p>
+                <p className="text-fitness-gray-light text-xs md:text-sm">
                   Tire uma foto do seu progresso hoje
                 </p>
               </div>
@@ -134,7 +145,7 @@ const Fotos = () => {
       </Card>
 
       {photos.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
           {photos.map((photo, index) => (
             <Card
               key={photo.id}
@@ -147,14 +158,17 @@ const Fotos = () => {
                   <img
                     src={photo.dataUrl}
                     alt={`Progresso dia ${photo.day}`}
-                    className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="w-full h-32 md:h-40 object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Camera className="h-8 w-8 text-white" />
+                    <Camera className="h-6 md:h-8 w-6 md:w-8 text-white" />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                     <p className="text-white text-xs font-semibold">Dia {photo.day}</p>
                     <p className="text-fitness-gray-light text-xs">{formatDate(photo.date)}</p>
+                    {photo.time && (
+                      <p className="text-cyan-400 text-xs">{photo.time}</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -162,10 +176,10 @@ const Fotos = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center space-y-4 p-12">
-          <div className="text-6xl mb-4">📸</div>
-          <h3 className="text-xl font-bold text-fitness-gray-light">Nenhuma foto ainda</h3>
-          <p className="text-fitness-gray-light">
+        <div className="text-center space-y-4 p-8 md:p-12">
+          <div className="text-4xl md:text-6xl mb-4">📸</div>
+          <h3 className="text-lg md:text-xl font-bold text-fitness-gray-light">Nenhuma foto ainda</h3>
+          <p className="text-fitness-gray-light text-sm md:text-base">
             Comece a documentar sua jornada! Adicione sua primeira foto de progresso.
           </p>
         </div>
@@ -175,9 +189,12 @@ const Fotos = () => {
         <DialogContent className="bg-fitness-gray-dark border-fitness-gray-light max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Camera className="h-5 w-5 text-fitness-red" />
+              <span className="flex items-center gap-2 text-sm md:text-base">
+                <Camera className="h-5 w-5 text-cyan-500" />
                 Dia {selectedPhoto?.day} - {selectedPhoto ? formatDate(selectedPhoto.date) : ''}
+                {selectedPhoto?.time && (
+                  <span className="text-cyan-400 text-sm">às {selectedPhoto.time}</span>
+                )}
               </span>
               <Button
                 onClick={() => selectedPhoto && deletePhoto(selectedPhoto.id)}
@@ -223,16 +240,19 @@ const Fotos = () => {
               
               <div className="flex justify-between items-center text-sm text-fitness-gray-light">
                 <span>Foto {selectedIndex + 1} de {photos.length}</span>
-                <span>Adicionada em {formatDate(selectedPhoto.date)}</span>
+                <span>
+                  Adicionada em {formatDate(selectedPhoto.date)}
+                  {selectedPhoto.time && ` às ${selectedPhoto.time}`}
+                </span>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      <div className="text-center space-y-4 p-6 bg-fitness-gray-dark rounded-xl">
-        <h3 className="text-xl font-bold text-fitness-red">📷 Dica de Fotografia</h3>
-        <p className="text-fitness-gray-light">
+      <div className="text-center space-y-4 p-4 md:p-6 bg-fitness-gray-dark rounded-xl">
+        <h3 className="text-lg md:text-xl font-bold text-cyan-500">📷 Dica de Fotografia</h3>
+        <p className="text-fitness-gray-light text-sm md:text-base">
           Tire fotos sempre no mesmo horário, com a mesma roupa e no mesmo local. 
           Isso vai deixar sua evolução muito mais visível. <strong className="text-white">Seja consistente!</strong>
         </p>
