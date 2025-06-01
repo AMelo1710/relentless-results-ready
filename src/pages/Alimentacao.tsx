@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Nutrition, Check, X } from 'lucide-react';
+import { Apple, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { saveToStorage, getFromStorage, StorageKeys } from '@/utils/storage';
 
@@ -66,7 +66,7 @@ const Alimentacao = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3">
-          <Nutrition className="text-fitness-red" />
+          <Apple className="text-fitness-red" />
           Alimentação
         </h1>
         <p className="text-fitness-gray-light text-lg">

@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Calendar, CheckCircle, Circle, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { saveToStorage, getFromStorage, StorageKeys, getProgressColor, calculateDayProgress } from '@/utils/storage';
+import { saveToStorage, getFromStorage, StorageKeys, getProgressColor } from '@/utils/storage';
 
 interface DayChecklist {
   treino_manha: boolean;
@@ -73,7 +72,10 @@ const CheckIn = () => {
 
   const getDayProgress = (day: number): number => {
     const checklist = getDayChecklist(day);
-    return calculateDayProgress(checklist);
+    const checklistRecord = checklist as Record<string, boolean>;
+    const totalItems = Object.keys(checklistRecord).length;
+    const completedItems = Object.values(checklistRecord).filter(Boolean).length;
+    return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
   };
 
   const getCompletedDays = (): number => {

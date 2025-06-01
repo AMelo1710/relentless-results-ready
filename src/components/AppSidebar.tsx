@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { 
   Activity, 
-  Nutrition, 
+  Apple, 
   Heart, 
   Clock, 
   Flame, 
@@ -25,7 +25,7 @@ import {
 
 const menuItems = [
   { title: "Treinos", url: "/treinos", icon: Activity },
-  { title: "Alimentação", url: "/alimentacao", icon: Nutrition },
+  { title: "Alimentação", url: "/alimentacao", icon: Apple },
   { title: "Suplementos", url: "/suplementos", icon: Heart },
   { title: "Divisão do Dia", url: "/divisao", icon: Clock },
   { title: "Regras Mentais", url: "/regras", icon: Flame },
