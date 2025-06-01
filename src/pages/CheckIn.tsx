@@ -13,6 +13,7 @@ interface DayChecklist {
   agua_3_4l: boolean;
   foto_tirada: boolean;
   sono_7h: boolean;
+  [key: string]: boolean;
 }
 
 interface CheckInData {
@@ -72,9 +73,8 @@ const CheckIn = () => {
 
   const getDayProgress = (day: number): number => {
     const checklist = getDayChecklist(day);
-    const checklistRecord = checklist as Record<string, boolean>;
-    const totalItems = Object.keys(checklistRecord).length;
-    const completedItems = Object.values(checklistRecord).filter(Boolean).length;
+    const totalItems = Object.keys(checklist).length;
+    const completedItems = Object.values(checklist).filter(Boolean).length;
     return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
   };
 
