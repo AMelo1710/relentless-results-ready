@@ -1,10 +1,21 @@
 
 import { useState, useEffect } from 'react';
-import { Camera, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, Upload, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { saveToStorage, getFromStorage, StorageKeys } from '@/utils/storage';
+import { useToast } from '@/hooks/use-toast';
 
 interface PhotoEntry {
   id: string;
@@ -19,6 +30,9 @@ const Fotos = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoEntry | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const savedPhotos = getFromStorage(StorageKeys.FOTOS, []);
@@ -57,15 +71,36 @@ const Fotos = () => {
       const updatedPhotos = [newPhoto, ...photos]; // Adicionar no início da lista
       setPhotos(updatedPhotos);
       saveToStorage(StorageKeys.FOTOS, updatedPhotos);
+      
+      toast({
+        title: "📸 Foto Adicionada!",
+        description: `Foto do dia ${newPhoto.day} salva com sucesso!`,
+        duration: 3000,
+      });
     };
     reader.readAsDataURL(file);
   };
 
-  const deletePhoto = (photoId: string) => {
-    const updatedPhotos = photos.filter(photo => photo.id !== photoId);
+  const confirmDeletePhoto = (photoId: string) => {
+    setPhotoToDelete(photoId);
+    setShowDeleteAlert(true);
+  };
+
+  const deletePhoto = () => {
+    if (!photoToDelete) return;
+    
+    const updatedPhotos = photos.filter(photo => photo.id !== photoToDelete);
     setPhotos(updatedPhotos);
     saveToStorage(StorageKeys.FOTOS, updatedPhotos);
     setIsDialogOpen(false);
+    setShowDeleteAlert(false);
+    setPhotoToDelete(null);
+    
+    toast({
+      title: "🗑️ Foto Excluída",
+      description: "Foto removida com sucesso!",
+      duration: 3000,
+    });
   };
 
   const openPhotoDialog = (photo: PhotoEntry) => {
@@ -95,27 +130,27 @@ const Fotos = () => {
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-4 animate-slide-up">
         <h1 className="text-2xl md:text-4xl font-bold text-white flex items-center justify-center gap-3">
-          <Camera className="text-cyan-500" />
+          <Camera className="text-cyan-500 animate-glow" />
           Fotos de Progresso
         </h1>
         <p className="text-fitness-gray-light text-base md:text-lg">
           Documente sua transformação dia a dia
         </p>
         
-        <div className="bg-fitness-gray-dark p-4 md:p-6 rounded-xl">
-          <div className="text-2xl md:text-3xl font-bold text-cyan-500 mb-2">
+        <div className="bg-fitness-gray-dark p-4 md:p-6 rounded-xl hover-lift">
+          <div className="text-2xl md:text-3xl font-bold text-cyan-500 mb-2 animate-pulse-strong">
             {photos.length}/28
           </div>
           <p className="text-fitness-gray-light">Fotos Registradas</p>
         </div>
       </div>
 
-      <Card className="glass-effect border-cyan-500/50">
+      <Card className="glass-effect border-cyan-500/50 hover-lift animate-slide-in">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2 text-lg md:text-xl">
-            <Upload className="h-5 w-5" />
+            <Upload className="h-5 w-5 animate-bounce-subtle" />
             Adicionar Nova Foto
           </CardTitle>
         </CardHeader>
@@ -132,8 +167,8 @@ const Fotos = () => {
               htmlFor="photo-upload"
               className="cursor-pointer inline-block"
             >
-              <div className="border-2 border-dashed border-cyan-500 rounded-lg p-6 md:p-8 hover:bg-cyan-500/10 transition-all duration-300">
-                <Camera className="h-8 md:h-12 w-8 md:w-12 text-cyan-500 mx-auto mb-4" />
+              <div className="border-2 border-dashed border-cyan-500 rounded-lg p-6 md:p-8 hover:bg-cyan-500/10 transition-all duration-300 hover:scale-105">
+                <Camera className="h-8 md:h-12 w-8 md:w-12 text-cyan-500 mx-auto mb-4 animate-bounce-subtle" />
                 <p className="text-white font-semibold mb-2 text-sm md:text-base">Clique para adicionar foto</p>
                 <p className="text-fitness-gray-light text-xs md:text-sm">
                   Tire uma foto do seu progresso hoje
@@ -145,15 +180,15 @@ const Fotos = () => {
       </Card>
 
       {photos.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 stagger-animation">
           {photos.map((photo, index) => (
             <Card
               key={photo.id}
-              className="glass-effect border-fitness-gray-dark hover-lift cursor-pointer group"
+              className="glass-effect border-fitness-gray-dark hover-lift cursor-pointer group animate-slide-up"
               onClick={() => openPhotoDialog(photo)}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <CardContent className="p-2">
+              <CardContent className="p-2 relative">
                 <div className="relative overflow-hidden rounded-lg">
                   <img
                     src={photo.dataUrl}
@@ -161,7 +196,20 @@ const Fotos = () => {
                     className="w-full h-32 md:h-40 object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Camera className="h-6 md:h-8 w-6 md:w-8 text-white" />
+                    <div className="flex gap-2">
+                      <Camera className="h-6 md:h-8 w-6 md:w-8 text-white" />
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmDeletePhoto(photo.id);
+                        }}
+                        size="sm"
+                        variant="destructive"
+                        className="p-1 h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                     <p className="text-white text-xs font-semibold">Dia {photo.day}</p>
@@ -176,7 +224,7 @@ const Fotos = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center space-y-4 p-8 md:p-12">
+        <div className="text-center space-y-4 p-8 md:p-12 animate-bounce-subtle">
           <div className="text-4xl md:text-6xl mb-4">📸</div>
           <h3 className="text-lg md:text-xl font-bold text-fitness-gray-light">Nenhuma foto ainda</h3>
           <p className="text-fitness-gray-light text-sm md:text-base">
@@ -197,12 +245,12 @@ const Fotos = () => {
                 )}
               </span>
               <Button
-                onClick={() => selectedPhoto && deletePhoto(selectedPhoto.id)}
+                onClick={() => selectedPhoto && confirmDeletePhoto(selectedPhoto.id)}
                 variant="outline"
                 size="sm"
                 className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
               >
-                <X className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </DialogTitle>
           </DialogHeader>
@@ -250,7 +298,32 @@ const Fotos = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="text-center space-y-4 p-4 md:p-6 bg-fitness-gray-dark rounded-xl">
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent className="bg-fitness-gray-dark border-red-500">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-fitness-gray-light">
+              Tem certeza que deseja excluir esta foto? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-fitness-gray-light text-white hover:bg-fitness-gray-light">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deletePhoto}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="text-center space-y-4 p-4 md:p-6 bg-fitness-gray-dark rounded-xl hover-lift animate-slide-up">
         <h3 className="text-lg md:text-xl font-bold text-cyan-500">📷 Dica de Fotografia</h3>
         <p className="text-fitness-gray-light text-sm md:text-base">
           Tire fotos sempre no mesmo horário, com a mesma roupa e no mesmo local. 
